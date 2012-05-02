@@ -121,7 +121,7 @@ static switch_status_t intercept_session(switch_core_session_t *session, const c
         return SWITCH_STATUS_SUCCESS;
 }
 
-static switch_status_t ingroup(char* mygroups, char* changroups)
+static switch_status_t ingroup(char* mygroups, char* changroups, switch_core_session_t *session)
 {
     char *mygroups_argv[50] = { 0 }, *changroups_argv[50] = { 0 };
     int mygroups_count = 1, changroups_count = 1;
@@ -144,7 +144,7 @@ static switch_status_t ingroup(char* mygroups, char* changroups)
     {
         for (y = 0; y < changroups_count; y++)
         {
-            switch_log_printf(SWITCH_CHANNEL_LOG, SWITCH_LOG_ERROR, "Comparing: %s = %s\n", mygroups_argv[x], changroups_argv[y]);
+            switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Comparing: %s = %s\n", mygroups_argv[x], changroups_argv[y]);
             if (!strcasecmp(changroups_argv[y], mygroups_argv[x])) {
                 return SWITCH_STATUS_SUCCESS;
             }
@@ -242,7 +242,7 @@ SWITCH_STANDARD_APP(pickup_function)
                 switch_core_session_rwunlock(other_session);
                 switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Pickup: %s Trying: %s\n", e_data.uuid_list[x], pickupgroup_dup);
 
-                if (ingroup(groups, pickupgroup_dup) == SWITCH_STATUS_SUCCESS) {
+                if (ingroup(groups, pickupgroup_dup, session) == SWITCH_STATUS_SUCCESS) {
                     if ((status = intercept_session(session, e_data.uuid_list[x], bleg)) != SWITCH_STATUS_SUCCESS) {
                         switch_log_printf(SWITCH_CHANNEL_SESSION_LOG(session), SWITCH_LOG_DEBUG, "Pickup: %s Failed, moving to next pickup.\n", e_data.uuid_list[x]);
                         continue;
